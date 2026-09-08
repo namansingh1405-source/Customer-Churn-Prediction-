@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Churn Risk Ledger</title>
+<style>
+  html, body {
+    margin:0; padding:0;
+    background:#EDEAE1;
+    min-height:100vh;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:40px 16px;
+    font-family:'Inter',sans-serif;
+  }
+</style>
+</head>
+<body>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+.churn-app{
+  --ink:#12233A;
+  --ink-soft:#1B3350;
+  --paper:#F4F3EE;
+  --paper-line:#DDDACF;
+  --teal:#1C6B63;
+  --gold:#C79A2B;
+  --risk-low:#4C7A50;
+  --risk-med:#C08A2E;
+  --risk-high:#B0453C;
+  --text:#1B2530;
+  --text-soft:#5B6672;
+  font-family:'Inter',sans-serif;
+  color:var(--text);
+  background:var(--paper);
+  border-radius:14px;
+  padding:0;
+  max-width:1180px;
+  margin:0 auto;
+  overflow:hidden;
+  border:1px solid var(--paper-line);
+}
+.churn-app *{box-sizing:border-box;}
+.churn-header{
+  background:var(--ink);
+  padding:26px 36px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.churn-brand{display:flex;align-items:center;gap:14px;}
+.churn-seal{
+  width:44px;height:44px;border-radius:50%;
+  border:2px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;color:var(--gold);font-weight:700;font-size:17px;
+  flex:none;
+}
+.churn-title{font-family:'Fraunces',serif;color:#F4F3EE;font-size:22px;font-weight:600;letter-spacing:.2px;}
+.churn-sub{color:#9FB3C8;font-size:12.5px;margin-top:2px;letter-spacing:.4px;text-transform:uppercase;}
+.churn-badge{
+  font-family:'JetBrains Mono',monospace;font-size:11px;color:#9FB3C8;
+  border:1px solid #33475E;padding:6px 10px;border-radius:6px;letter-spacing:.5px;
+}
+.churn-body{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+}
+@media (max-width:820px){ .churn-body{grid-template-columns:1fr;} }
+
+.churn-form{
+  padding:32px 36px 36px;
+  border-right:1px solid var(--paper-line);
+}
+.churn-form h2, .churn-result h2{
+  font-family:'Fraunces',serif;font-size:15px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1.2px;color:var(--text-soft);
+  margin:0 0 18px;padding-bottom:10px;border-bottom:1px dashed var(--paper-line);
+}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-bottom:14px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:12px;color:var(--text-soft);font-weight:600;letter-spacing:.2px;}
+.field input[type=number], .field select{
+  font-family:'JetBrains Mono',monospace;
+  border:1px solid #C7C2B2;background:#FCFBF8;
+  border-radius:6px;padding:8px 10px;font-size:13.5px;color:var(--text);
+  outline:none;
+}
+.field input[type=number]:focus, .field select:focus{border-color:var(--teal);}
+.slider-field{grid-column:1 / -1;}
+.slider-value{font-family:'JetBrains Mono',monospace;color:var(--teal);font-weight:700;}
+input[type=range]{width:100%;accent-color:var(--teal);margin-top:4px;}
+.toggle-row{display:flex;gap:10px;grid-column:1 / -1;flex-wrap:wrap;}
+.toggle{
+  flex:1;min-width:130px;display:flex;align-items:center;justify-content:space-between;
+  border:1px solid #C7C2B2;background:#FCFBF8;border-radius:6px;padding:9px 12px;cursor:pointer;
+  font-size:12.5px;font-weight:600;color:var(--text-soft);user-select:none;
+}
+.toggle.on{border-color:var(--teal);background:#EAF2F0;color:var(--teal);}
+.toggle .dot{width:9px;height:9px;border-radius:50%;background:#C7C2B2;}
+.toggle.on .dot{background:var(--teal);}
+.calc-btn{
+  margin-top:18px;width:100%;padding:13px;border:none;border-radius:8px;
+  background:var(--ink);color:#F4F3EE;font-family:'Fraunces',serif;font-size:15px;font-weight:600;
+  cursor:pointer;letter-spacing:.3px;transition:background .15s ease;
+}
+.calc-btn:hover{background:var(--ink-soft);}
+.calc-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+.churn-result{padding:32px 36px 36px;display:flex;flex-direction:column;gap:20px;}
+.gauge-wrap{display:flex;align-items:center;gap:22px;}
+.gauge-num{font-family:'JetBrains Mono',monospace;}
+.tier-badge{
+  display:inline-block;padding:5px 12px;border-radius:999px;font-size:11.5px;font-weight:700;
+  letter-spacing:.6px;text-transform:uppercase;color:#fff;
+}
+.factors{display:flex;flex-direction:column;gap:8px;}
+.factor-row{display:flex;align-items:center;gap:10px;font-size:13px;}
+.factor-name{flex:1;color:var(--text);}
+.factor-bar-track{flex:2;height:7px;background:var(--paper-line);border-radius:4px;overflow:hidden;}
+.factor-bar{height:100%;border-radius:4px;}
+.factor-dir{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;width:34px;text-align:right;}
+.strategy-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;}
+.strategy-list li{
+  font-size:13.5px;padding:10px 12px;background:#FCFBF8;border:1px solid var(--paper-line);
+  border-radius:7px;border-left:3px solid var(--teal);color:var(--text);
+}
+.footnote{font-size:11.5px;color:var(--text-soft);line-height:1.5;padding-top:6px;border-top:1px dashed var(--paper-line);}
+.placeholder{color:var(--text-soft);font-size:13.5px;padding:14px 0;}
+</style>
+
+<div class="churn-app" id="churnApp">
+  <div class="churn-header">
+    <div class="churn-brand">
+      <div class="churn-seal">CR</div>
+      <div>
+        <div class="churn-title">Churn Risk Ledger</div>
+        <div class="churn-sub">Retail banking · retention desk</div>
+      </div>
+    </div>
+    <div class="churn-badge">MODEL: LOGISTIC REGRESSION · TRAINED ON 10,000 ACCOUNTS</div>
+  </div>
+
+  <div class="churn-body">
+    <div class="churn-form">
+      <h2>Customer profile</h2>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="creditScore">Credit score</label>
+          <input type="number" id="creditScore" min="300" max="900" value="650">
+        </div>
+        <div class="field">
+          <label for="geography">Geography</label>
+          <select id="geography">
+            <option value="France">France</option>
+            <option value="Germany">Germany</option>
+            <option value="Spain">Spain</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="age">Age</label>
+          <input type="number" id="age" min="18" max="95" value="40">
+        </div>
+        <div class="field">
+          <label for="tenure">Tenure (years with bank)</label>
+          <input type="number" id="tenure" min="0" max="10" value="5">
+        </div>
+        <div class="field">
+          <label for="balance">Balance</label>
+          <input type="number" id="balance" min="0" step="1000" value="76000">
+        </div>
+        <div class="field">
+          <label for="salary">Estimated salary</label>
+          <input type="number" id="salary" min="0" step="1000" value="100000">
+        </div>
+
+        <div class="field slider-field">
+          <label for="numProducts">Number of products — <span class="slider-value" id="numProductsVal">1</span></label>
+          <input type="range" id="numProducts" min="1" max="4" step="1" value="1">
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle" id="genderToggle" data-on="false">
+            <span id="genderLabel">Gender: Female</span><span class="dot"></span>
+          </div>
+          <div class="toggle on" id="activeToggle" data-on="true">
+            <span id="activeLabel">Active member</span><span class="dot"></span>
+          </div>
+          <div class="toggle on" id="cardToggle" data-on="true">
+            <span id="cardLabel">Has credit card</span><span class="dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <button class="calc-btn" id="calcBtn">Calculate churn risk</button>
+      <div class="footnote" style="margin-top:14px;">
+        Scoring function is a logistic regression fit on the project's 10,000-customer dataset
+        (features standardised the same way as in <span style="font-family:'JetBrains Mono',monospace;">churn_project.py</span>),
+        the same interpretable model reported alongside Random Forest and XGBoost in the written report.
+      </div>
+    </div>
+
+    <div class="churn-result">
+      <h2>Risk assessment</h2>
+      <div id="resultArea">
+        <div class="placeholder">Enter a customer profile and click "Calculate churn risk" to see their score.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const root = document.getElementById('churnApp');
+
+  // ---- real coefficients from LogisticRegression(class_weight='balanced') ----
+  // trained on the project's 10,000-row dataset with StandardScaler on numeric fields
+  const COEF = {
+    CreditScore: -0.0869,
+    Gender: -0.5446,
+    Age: 0.8011,
+    Tenure: -0.0187,
+    Balance: 0.1751,
+    NumOfProducts: -0.0579,
+    HasCrCard: -0.0676,
+    IsActiveMember: -0.8816,
+    EstimatedSalary: 0.0504,
+    Geography_Germany: 0.8263,
+    Geography_Spain: 0.0583
+  };
+  const INTERCEPT = 0.2906;
+  const SCALER = {
+    CreditScore: {mean:650.75, scale:96.59},
+    Age: {mean:38.95, scale:10.53},
+    Tenure: {mean:5.02, scale:2.90},
+    Balance: {mean:76381.21, scale:62298.16},
+    NumOfProducts: {mean:1.53, scale:0.582},
+    EstimatedSalary: {mean:99730.81, scale:57331.53}
+  };
+  // dataset-wide average rate for binary/one-hot features, used only to make the
+  // "top factors" panel readable relative to an average customer (does not affect
+  // the actual probability calculation, which uses the raw trained coefficients)
+  const BASE_RATE = {
+    Gender: 0.5457,
+    HasCrCard: 0.7055,
+    IsActiveMember: 0.5151,
+    Geography_Germany: 0.2509,
+    Geography_Spain: 0.2477
+  };
+
+  const FRIENDLY = {
+    CreditScore: 'Credit score',
+    Gender: 'Gender (male)',
+    Age: 'Age',
+    Tenure: 'Tenure',
+    Balance: 'Balance',
+    NumOfProducts: 'Number of products',
+    HasCrCard: 'Has credit card',
+    IsActiveMember: 'Membership activity',
+    EstimatedSalary: 'Estimated salary',
+    Geography_Germany: 'Based in Germany',
+    Geography_Spain: 'Based in Spain'
+  };
+
+  function z(field, value){
+    const s = SCALER[field];
+    return (value - s.mean) / s.scale;
+  }
+  function sigmoid(x){ return 1/(1+Math.exp(-x)); }
+
+  function toggle(id){
+    const el = root.querySelector('#'+id);
+    el.addEventListener('click', ()=>{
+      const isOn = el.getAttribute('data-on') === 'true';
+      el.setAttribute('data-on', String(!isOn));
+      el.classList.toggle('on', !isOn);
+      if(id==='genderToggle'){
+        root.querySelector('#genderLabel').textContent = !isOn ? 'Gender: Male' : 'Gender: Female';
+      }
+      if(id==='activeToggle'){
+        root.querySelector('#activeLabel').textContent = !isOn ? 'Active member' : 'Inactive member';
+      }
+      if(id==='cardToggle'){
+        root.querySelector('#cardLabel').textContent = !isOn ? 'Has credit card' : 'No credit card';
+      }
+    });
+  }
+  toggle('genderToggle'); toggle('activeToggle'); toggle('cardToggle');
+
+  const numProductsSlider = root.querySelector('#numProducts');
+  numProductsSlider.addEventListener('input', ()=>{
+    root.querySelector('#numProductsVal').textContent = numProductsSlider.value;
+  });
+
+  function riskColor(tier){
+    if(tier==='High Risk') return getComputedStyle(root).getPropertyValue('--risk-high').trim() || '#B0453C';
+    if(tier==='Medium Risk') return '#C08A2E';
+    return '#4C7A50';
+  }
+
+  const STRATEGY = {
+    'High Risk': [
+      'Assign a dedicated relationship manager',
+      'Offer a personalised retention discount or loyalty reward',
+      'Proactive outreach call within 7 days',
+      'Offer an upgraded product bundle',
+      'Enroll in a re-engagement campaign if inactive'
+    ],
+    'Medium Risk': [
+      'Send a targeted email highlighting unused features or benefits',
+      'Offer a flexible plan adjustment to ease balance-driven stress',
+      'Germany-based: prioritise regional trust-building outreach',
+      'Prompt to activate membership benefits'
+    ],
+    'Low Risk': [
+      'Standard loyalty-programme communications',
+      'Cross-sell a second product if the customer only holds one',
+      'Include in the annual satisfaction survey'
+    ]
+  };
+
+  root.querySelector('#calcBtn').addEventListener('click', ()=>{
+    const creditScore = parseFloat(root.querySelector('#creditScore').value) || 0;
+    const geography = root.querySelector('#geography').value;
+    const age = parseFloat(root.querySelector('#age').value) || 0;
+    const tenure = parseFloat(root.querySelector('#tenure').value) || 0;
+    const balance = parseFloat(root.querySelector('#balance').value) || 0;
+    const salary = parseFloat(root.querySelector('#salary').value) || 0;
+    const numProducts = parseFloat(numProductsSlider.value);
+    const gender = root.querySelector('#genderToggle').getAttribute('data-on') === 'true' ? 1 : 0;
+    const isActive = root.querySelector('#activeToggle').getAttribute('data-on') === 'true' ? 1 : 0;
+    const hasCard = root.querySelector('#cardToggle').getAttribute('data-on') === 'true' ? 1 : 0;
+    const geoGermany = geography === 'Germany' ? 1 : 0;
+    const geoSpain = geography === 'Spain' ? 1 : 0;
+
+    const contributions = {
+      CreditScore: COEF.CreditScore * z('CreditScore', creditScore),
+      Gender: COEF.Gender * gender,
+      Age: COEF.Age * z('Age', age),
+      Tenure: COEF.Tenure * z('Tenure', tenure),
+      Balance: COEF.Balance * z('Balance', balance),
+      NumOfProducts: COEF.NumOfProducts * z('NumOfProducts', numProducts),
+      HasCrCard: COEF.HasCrCard * hasCard,
+      IsActiveMember: COEF.IsActiveMember * isActive,
+      EstimatedSalary: COEF.EstimatedSalary * z('EstimatedSalary', salary),
+      Geography_Germany: COEF.Geography_Germany * geoGermany,
+      Geography_Spain: COEF.Geography_Spain * geoSpain
+    };
+
+    let logit = INTERCEPT;
+    Object.values(contributions).forEach(v => logit += v);
+    const prob = sigmoid(logit);
+    const pct = (prob*100).toFixed(1);
+
+    let tier = 'Low Risk';
+    if(prob > 0.6) tier = 'High Risk';
+    else if(prob > 0.3) tier = 'Medium Risk';
+    const color = riskColor(tier);
+
+    // for display only: contributions measured relative to an average customer,
+    // so binary/one-hot features (e.g. inactive membership) show a meaningful
+    // direction instead of reading as "zero effect" when their raw value is 0
+    const displayContributions = {
+      CreditScore: contributions.CreditScore,
+      Age: contributions.Age,
+      Tenure: contributions.Tenure,
+      Balance: contributions.Balance,
+      NumOfProducts: contributions.NumOfProducts,
+      EstimatedSalary: contributions.EstimatedSalary,
+      Gender: COEF.Gender * (gender - BASE_RATE.Gender),
+      HasCrCard: COEF.HasCrCard * (hasCard - BASE_RATE.HasCrCard),
+      IsActiveMember: COEF.IsActiveMember * (isActive - BASE_RATE.IsActiveMember),
+      Geography_Germany: COEF.Geography_Germany * (geoGermany - BASE_RATE.Geography_Germany),
+      Geography_Spain: COEF.Geography_Spain * (geoSpain - BASE_RATE.Geography_Spain)
+    };
+
+    // top factors by absolute contribution
+    const ranked = Object.entries(displayContributions)
+      .sort((a,b)=>Math.abs(b[1])-Math.abs(a[1]))
+      .slice(0,5);
+    const maxAbs = Math.max(...ranked.map(r=>Math.abs(r[1])), 0.0001);
+
+    const factorsHtml = ranked.map(([key,val])=>{
+      const width = Math.max(6, Math.round(Math.abs(val)/maxAbs*100));
+      const dir = val >= 0 ? '↑ risk' : '↓ risk';
+      const barColor = val >= 0 ? '#B0453C' : '#4C7A50';
+      return `<div class="factor-row">
+        <div class="factor-name">${FRIENDLY[key]}</div>
+        <div class="factor-bar-track"><div class="factor-bar" style="width:${width}%;background:${barColor}"></div></div>
+        <div class="factor-dir" style="color:${barColor}">${dir}</div>
+      </div>`;
+    }).join('');
+
+    const strategyHtml = STRATEGY[tier].map(s=>`<li>${s}</li>`).join('');
+
+    // gauge SVG: semicircle arc from -90 to 90 deg mapped to 0-100%
+    const angle = -90 + (prob*180);
+    const rad = angle * Math.PI/180;
+    const cx=90, cy=90, r=72;
+    const nx = cx + r*Math.cos(rad);
+    const ny = cy + r*Math.sin(rad);
+
+    const svg = `
+      <svg width="180" height="110" viewBox="0 0 180 110">
+        <path d="M 18 90 A 72 72 0 0 1 162 90" fill="none" stroke="#DDDACF" stroke-width="14" stroke-linecap="round"/>
+        <path d="M 18 90 A 72 72 0 0 1 162 90" fill="none" stroke="${color}" stroke-width="14" stroke-linecap="round"
+          stroke-dasharray="${prob*226.2} 226.2"/>
+        <circle cx="${cx}" cy="${cy}" r="5" fill="${color}"/>
+        <line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+      </svg>`;
+
+    root.querySelector('#resultArea').innerHTML = `
+      <div class="gauge-wrap">
+        ${svg}
+        <div>
+          <div class="gauge-num" style="font-size:32px;font-weight:700;color:${color};">${pct}%</div>
+          <div style="font-size:12.5px;color:var(--text-soft);margin-bottom:8px;">predicted probability of churn</div>
+          <span class="tier-badge" style="background:${color};">${tier}</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-soft);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Top factors in this score</div>
+        <div class="factors">${factorsHtml}</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-soft);letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Recommended retention actions</div>
+        <ul class="strategy-list">${strategyHtml}</ul>
+      </div>
+    `;
+  });
+})();
+</script>
+
+</body>
+</html>
